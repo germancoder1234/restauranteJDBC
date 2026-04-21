@@ -59,8 +59,6 @@ public class App {
 		initialize();
 	}
 
-	// ===================== CARGAS =====================
-
 	private void cargarIngredientes() {
 		try {
 			Connection con = ConnectionSingleton.getConnection();
@@ -133,11 +131,7 @@ public class App {
 		}
 	}
 
-	// ===================== INIT =====================
-
 	private void initialize() {
-		
-		
 
 		frame = new JFrame();
 		frame.setBounds(100, 100, 770, 443);
@@ -185,18 +179,25 @@ public class App {
 		btnGuardarIng.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"INSERT INTO ingrediente (calorias, nombre) VALUES (?, ?)"
-					);
+					if (textFieldCalorias.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce las calorías del ingrediente");
+					} else if (textFieldNombreIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el nombre del ingrediente");
+					} else if (!textFieldCalorias.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "las calorías tienen que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con
+								.prepareStatement("INSERT INTO ingrediente (calorias, nombre) VALUES (?, ?)");
 
-					ps.setInt(1, Integer.parseInt(textFieldCalorias.getText()));
-					ps.setString(2, textFieldNombreIngrediente.getText());
+						ps.setInt(1, Integer.parseInt(textFieldCalorias.getText()));
+						ps.setString(2, textFieldNombreIngrediente.getText());
 
-					ps.executeUpdate();
-					ps.close();
+						ps.executeUpdate();
+						ps.close();
 
-					cargarIngredientes();
+						cargarIngredientes();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -211,19 +212,29 @@ public class App {
 		btnActualizarIng.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"UPDATE ingrediente SET calorias=?, nombre=? WHERE id=?"
-					);
 
-					ps.setInt(1, Integer.parseInt(textFieldCalorias.getText()));
-					ps.setString(2, textFieldNombreIngrediente.getText());
-					ps.setInt(3, Integer.parseInt(textFieldIdIngrediente.getText()));
+					if (textFieldIdIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona un ingrediente de la tabla");
+					} else if (textFieldCalorias.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce las calorías del ingrediente");
+					} else if (textFieldNombreIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el nombre del ingrediente");
+					} else if (!textFieldCalorias.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "las calorías tienen que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con
+								.prepareStatement("UPDATE ingrediente SET calorias=?, nombre=? WHERE id=?");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setInt(1, Integer.parseInt(textFieldCalorias.getText()));
+						ps.setString(2, textFieldNombreIngrediente.getText());
+						ps.setInt(3, Integer.parseInt(textFieldIdIngrediente.getText()));
 
-					cargarIngredientes();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarIngredientes();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -238,17 +249,20 @@ public class App {
 		btnBorrarIng.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"DELETE FROM ingrediente WHERE id=?"
-					);
 
-					ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
+					if (textFieldIdIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona un ingrediente de la tabla");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con.prepareStatement("DELETE FROM ingrediente WHERE id=?");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
 
-					cargarIngredientes();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarIngredientes();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -280,7 +294,7 @@ public class App {
 		JScrollPane scrollPane2 = new JScrollPane(tableReceta);
 		scrollPane2.setBounds(490, 12, 250, 155);
 		frame.getContentPane().add(scrollPane2);
-		
+
 		JLabel lblIngredientes = new JLabel("");
 		lblIngredientes.setBounds(500, 342, 214, 14);
 		frame.getContentPane().add(lblIngredientes);
@@ -291,27 +305,26 @@ public class App {
 				textFieldIdReceta.setText(modelo.getValueAt(i, 0).toString());
 				textFieldNombreReceta.setText(modelo.getValueAt(i, 1).toString());
 				textFieldTiempo.setText(modelo.getValueAt(i, 2).toString());
-				
-				try {
-			    	Connection	con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM comida WHERE id_receta = ?");
-								
-					ps.setInt(1, Integer.parseInt(textFieldIdReceta.getText()));
-					
-			ResultSet rs=ps.executeQuery();
-			if (rs.next()) {
-				int total = rs.getInt(1);
-				lblIngredientes.setText("Ingredientes: " + total);
-			}
 
-			rs.close();
-			ps.close();
-					
+				try {
+					Connection con = ConnectionSingleton.getConnection();
+					PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM comida WHERE id_receta = ?");
+
+					ps.setInt(1, Integer.parseInt(textFieldIdReceta.getText()));
+
+					ResultSet rs = ps.executeQuery();
+					if (rs.next()) {
+						int total = rs.getInt(1);
+						lblIngredientes.setText("Ingredientes: " + total);
+					}
+
+					// FIX: cerrar rs y ps
+					rs.close();
+					ps.close();
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-				}		
-				
+				}
 			}
 		});
 
@@ -322,18 +335,24 @@ public class App {
 		btnGuardarRec.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"INSERT INTO receta (nombre, tiempo) VALUES (?, ?)"
-					);
+					if (textFieldNombreReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el nombre de la receta");
+					} else if (textFieldTiempo.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el tiempo de duración de la receta");
+					} else if (!textFieldTiempo.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "el tiempo tiene que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con.prepareStatement("INSERT INTO receta (nombre, tiempo) VALUES (?, ?)");
 
-					ps.setString(1, textFieldNombreReceta.getText());
-					ps.setInt(2, Integer.parseInt(textFieldTiempo.getText()));
+						ps.setString(1, textFieldNombreReceta.getText());
+						ps.setInt(2, Integer.parseInt(textFieldTiempo.getText()));
 
-					ps.executeUpdate();
-					ps.close();
+						ps.executeUpdate();
+						ps.close();
 
-					cargarRecetas();
+						cargarRecetas();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -348,19 +367,28 @@ public class App {
 		btnActualizarRec.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"UPDATE receta SET nombre=?, tiempo=? WHERE id=?"
-					);
 
-					ps.setString(1, textFieldNombreReceta.getText());
-					ps.setInt(2, Integer.parseInt(textFieldTiempo.getText()));
-					ps.setInt(3, Integer.parseInt(textFieldIdReceta.getText()));
+					if (textFieldIdReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona una receta de la tabla");
+					} else if (textFieldNombreReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el nombre de la receta");
+					} else if (textFieldTiempo.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el tiempo de duración de la receta");
+					} else if (!textFieldTiempo.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "el tiempo tiene que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con.prepareStatement("UPDATE receta SET nombre=?, tiempo=? WHERE id=?");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setString(1, textFieldNombreReceta.getText());
+						ps.setInt(2, Integer.parseInt(textFieldTiempo.getText()));
+						ps.setInt(3, Integer.parseInt(textFieldIdReceta.getText()));
 
-					cargarRecetas();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarRecetas();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -375,17 +403,20 @@ public class App {
 		btnBorrarRec.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"DELETE FROM receta WHERE id=?"
-					);
 
-					ps.setInt(1, Integer.parseInt(textFieldIdReceta.getText()));
+					if (textFieldIdReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona una receta de la tabla");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con.prepareStatement("DELETE FROM receta WHERE id=?");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setInt(1, Integer.parseInt(textFieldIdReceta.getText()));
 
-					cargarRecetas();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarRecetas();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -409,17 +440,11 @@ public class App {
 		scrollPane3.setBounds(263, 12, 213, 156);
 		frame.getContentPane().add(scrollPane3);
 
-		
 		tablaMatriz.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				
 				textFieldIdIngrediente.setText(modelom.getValueAt(tablaMatriz.getSelectedRow(), 0).toString());
 				textFieldIdReceta.setText(modelom.getValueAt(tablaMatriz.getSelectedRow(), 1).toString());
 				textFieldGramos.setText(modelom.getValueAt(tablaMatriz.getSelectedRow(), 2).toString());
-
-				
-				
-				
 			}
 		});
 
@@ -430,19 +455,28 @@ public class App {
 		btnGuardarCom.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"INSERT INTO comida VALUES (?, ?, ?)"
-					);
 
-					ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
-					ps.setInt(2, Integer.parseInt(textFieldIdReceta.getText()));
-					ps.setInt(3, Integer.parseInt(textFieldGramos.getText()));
+					if (textFieldIdIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona un ingrediente de la tabla");
+					} else if (textFieldIdReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona una receta de la tabla");
+					} else if (textFieldGramos.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el numero de gramos");
+					} else if (!textFieldGramos.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "los gramos tienen que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con.prepareStatement("INSERT INTO comida VALUES (?, ?, ?)");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
+						ps.setInt(2, Integer.parseInt(textFieldIdReceta.getText()));
+						ps.setInt(3, Integer.parseInt(textFieldGramos.getText()));
 
-					cargarComida();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarComida();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -457,19 +491,29 @@ public class App {
 		btnActualizarCom.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"UPDATE comida SET gramos=? WHERE id_ingrediente=? AND id_receta=?"
-					);
+					// FIX: comprobar que hay ingrediente y receta seleccionados
+					if (textFieldIdIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona un ingrediente de la tabla");
+					} else if (textFieldIdReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona una receta de la tabla");
+					} else if (textFieldGramos.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "introduce el numero de gramos");
+					} else if (!textFieldGramos.getText().matches("\\d+")) {
+						JOptionPane.showMessageDialog(null, "los gramos tienen que ser un número entero");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con
+								.prepareStatement("UPDATE comida SET gramos=? WHERE id_ingrediente=? AND id_receta=?");
 
-					ps.setInt(1, Integer.parseInt(textFieldGramos.getText()));
-					ps.setInt(2, Integer.parseInt(textFieldIdIngrediente.getText()));
-					ps.setInt(3, Integer.parseInt(textFieldIdReceta.getText()));
+						ps.setInt(1, Integer.parseInt(textFieldGramos.getText()));
+						ps.setInt(2, Integer.parseInt(textFieldIdIngrediente.getText()));
+						ps.setInt(3, Integer.parseInt(textFieldIdReceta.getText()));
 
-					ps.executeUpdate();
-					ps.close();
+						ps.executeUpdate();
+						ps.close();
 
-					cargarComida();
+						cargarComida();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
@@ -480,37 +524,35 @@ public class App {
 		JButton btnBorrarCom = new JButton("Borrar");
 		btnBorrarCom.setBounds(321, 284, 105, 27);
 		frame.getContentPane().add(btnBorrarCom);
-		
-		
-		
+
 		JLabel lblNewLabel = new JLabel("gramos");
 		lblNewLabel.setBounds(318, 326, 46, 14);
 		frame.getContentPane().add(lblNewLabel);
-		
+
 		JLabel lblNewLabel_1 = new JLabel("id");
 		lblNewLabel_1.setBounds(33, 179, 46, 14);
 		frame.getContentPane().add(lblNewLabel_1);
-		
+
 		JLabel lblNewLabel_2 = new JLabel("nombre");
 		lblNewLabel_2.setBounds(32, 272, 46, 14);
 		frame.getContentPane().add(lblNewLabel_2);
-		
+
 		JLabel lblNewLabel_3 = new JLabel("calorias");
 		lblNewLabel_3.setBounds(32, 227, 68, 14);
 		frame.getContentPane().add(lblNewLabel_3);
-		
+
 		JLabel lblNewLabel_4 = new JLabel("id");
 		lblNewLabel_4.setBounds(500, 178, 46, 14);
 		frame.getContentPane().add(lblNewLabel_4);
-		
+
 		JLabel lblNewLabel_5 = new JLabel("nombre");
 		lblNewLabel_5.setBounds(498, 227, 46, 14);
 		frame.getContentPane().add(lblNewLabel_5);
-		
+
 		JLabel lblNewLabel_6 = new JLabel("tiempo");
 		lblNewLabel_6.setBounds(498, 272, 74, 14);
 		frame.getContentPane().add(lblNewLabel_6);
-		
+
 		JButton btnCalorias = new JButton("Más calórico");
 		btnCalorias.addMouseListener(new MouseAdapter() {
 			@Override
@@ -518,37 +560,35 @@ public class App {
 				try {
 					Connection con = ConnectionSingleton.getConnection();
 
-					PreparedStatement ps = con.prepareStatement(
-						"SELECT MAX(calorias) FROM ingrediente"
-					);
-
+					PreparedStatement ps = con.prepareStatement("SELECT MAX(calorias) FROM ingrediente");
 					ResultSet rs = ps.executeQuery();
 
 					if (rs.next()) {
 						int calorias = rs.getInt(1);
 
-						PreparedStatement ps2 = con.prepareStatement(
-							"SELECT nombre FROM ingrediente WHERE calorias = ?"
-						);
+						// FIX: cerrar rs y ps antes de abrir los siguientes
+						rs.close();
+						ps.close();
 
+						PreparedStatement ps2 = con
+								.prepareStatement("SELECT nombre FROM ingrediente WHERE calorias = ?");
 						ps2.setInt(1, calorias);
 
 						ResultSet rs2 = ps2.executeQuery();
 
 						if (rs2.next()) {
 							String nombre = rs2.getString("nombre");
-
-							JOptionPane.showMessageDialog(frame,
-								"El ingrediente con más calorías es " + nombre
-							);
+							JOptionPane.showMessageDialog(frame, "El ingrediente con más calorías es " + nombre);
 						}
 
+						// FIX: cerrar rs2 y ps2
 						rs2.close();
 						ps2.close();
+					} else {
+						// FIX: cerrar aunque no haya resultados
+						rs.close();
+						ps.close();
 					}
-
-					rs.close();
-					ps.close();
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -561,28 +601,33 @@ public class App {
 		btnBorrarCom.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				try {
-					Connection con = ConnectionSingleton.getConnection();
-					PreparedStatement ps = con.prepareStatement(
-						"DELETE FROM comida WHERE id_ingrediente=? AND id_receta=?"
-					);
 
-					ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
-					ps.setInt(2, Integer.parseInt(textFieldIdReceta.getText()));
+					if (textFieldIdIngrediente.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona un ingrediente de la tabla");
+					} else if (textFieldIdReceta.getText().isEmpty()) {
+						JOptionPane.showMessageDialog(null, "selecciona una receta de la tabla");
+					} else {
+						Connection con = ConnectionSingleton.getConnection();
+						PreparedStatement ps = con
+								.prepareStatement("DELETE FROM comida WHERE id_ingrediente=? AND id_receta=?");
 
-					ps.executeUpdate();
-					ps.close();
+						ps.setInt(1, Integer.parseInt(textFieldIdIngrediente.getText()));
+						ps.setInt(2, Integer.parseInt(textFieldIdReceta.getText()));
 
-					cargarComida();
+						ps.executeUpdate();
+						ps.close();
+
+						cargarComida();
+					}
 
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage());
 				}
 			}
 		});
+
 		cargarIngredientes();
 		cargarRecetas();
 		cargarComida();
-
-		
 	}
 }
